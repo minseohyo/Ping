@@ -12,7 +12,7 @@ public struct Envelope: Codable, Sendable, Equatable {
     }
 }
 
-public struct Member: Codable, Sendable, Equatable, Identifiable {
+public struct Member: Codable, Sendable, Equatable, Hashable, Identifiable {
     public var id: String { userId }
     public let userId: String
     public let nickname: String

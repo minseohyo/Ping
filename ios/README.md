@@ -39,5 +39,12 @@ App 타깃에서 `Info.plist` 또는 `.xcconfig`로 아래 값을 주입하는 �
 macOS/Xcode 환경에서:
 1) SwiftUI App 프로젝트 생성
 2) `ios/Packages/*`를 Local Package로 추가
-3) App Target에서 `PingApp`(Composition Root) 코드를 추가/연결
+3) App Target에서 `PingAppSkeleton/PingAppEntry.swift`(@main) + `PingApp.swift` 추가
+
+**Xcode 14.2 기준 클릭 순서 전체**: `ios/XCODE_14_SETUP_KO.md`
+
+### Toolchain
+
+- **Xcode 14.2**: Swift 5.7, 최소 iOS 타깃 **16** 권장  
+- SPM: `swift-tools-version: 5.7`, `platforms: [.iOS(.v16)]`
 

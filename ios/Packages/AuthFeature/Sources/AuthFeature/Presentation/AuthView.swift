@@ -12,7 +12,7 @@ public struct AuthView: View {
     public var body: some View {
         content
             .onAppear { viewModel.onAppear() }
-            .onChange(of: viewModel.state) { _, new in
+            .onChange(of: viewModel.state) { new in
                 if case .authenticated(let me) = new {
                     onAuthenticated(me)
                 }

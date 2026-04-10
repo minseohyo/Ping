@@ -1,9 +1,9 @@
-// swift-tools-version: 5.10
+// swift-tools-version: 5.7
 import PackageDescription
 
 let package = Package(
     name: "InteractionFeature",
-    platforms: [.iOS(.v17)],
+    platforms: [.iOS(.v16)],
     products: [
         .library(name: "InteractionFeature", targets: ["InteractionFeature"])
     ],

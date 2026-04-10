@@ -1,9 +1,9 @@
-// swift-tools-version: 5.10
+// swift-tools-version: 5.7
 import PackageDescription
 
 let package = Package(
     name: "CoreNetworking",
-    platforms: [.iOS(.v17)],
+    platforms: [.iOS(.v16)],
     products: [
         .library(name: "CoreNetworking", targets: ["CoreNetworking"])
     ],
