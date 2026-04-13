@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import uuid
 from typing import Any, Optional
 
@@ -185,20 +184,21 @@ async def ws_endpoint(websocket: WebSocket) -> None:
     store = await get_store()
     user_id: Optional[str] = None
 
+    # Handshake must be accepted before receiving frames.
+    await websocket.accept()
+
     try:
         # First message must include deviceId in payload (any command is OK).
         first_raw = await websocket.receive_json()
         first = Envelope.model_validate(first_raw)
         device_id = first.payload.get("deviceId")
         if not device_id:
-            await websocket.accept()
             await websocket.send_json(env("error", ErrorPayload(code="unauthorized_device", message="deviceId required").model_dump()))
             await websocket.close(code=1008)
             return
 
         user_id = await store.get_user_id_by_device(device_id)
         if not user_id:
-            await websocket.accept()
             await websocket.send_json(env("error", ErrorPayload(code="unauthorized_device", message="Unknown deviceId").model_dump()))
             await websocket.close(code=1008)
             return
@@ -218,8 +218,13 @@ async def ws_endpoint(websocket: WebSocket) -> None:
             hub.disconnect(user_id)
     except Exception as e:
         # Best-effort error message
+        print("WS ERROR:", repr(e))
         try:
             await websocket.send_json(env("error", ErrorPayload(code="server_error", message=str(e)).model_dump()))
+        except Exception:
+            pass
+        try:
+            await websocket.close(code=1011)
         except Exception:
             pass
         if user_id:

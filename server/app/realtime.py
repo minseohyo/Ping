@@ -23,7 +23,6 @@ class RealtimeHub:
         return self._by_user.get(user_id)
 
     async def connect(self, user_id: str, websocket: WebSocket) -> Connection:
-        await websocket.accept()
         conn = Connection(user_id=user_id, websocket=websocket, room_id=None, lock=asyncio.Lock())
         self._by_user[user_id] = conn
         return conn
