@@ -48,7 +48,22 @@ public struct PingAppRootView: View {
                 )
 
             case .matching(let me, let deviceId):
-                MatchingView(viewModel: MatchingViewModel(deviceId: deviceId, ws: container.ws))
+                MatchingView(
+                    viewModel: MatchingViewModel(
+                        deviceId: deviceId,
+                        http: container.http,
+                        onMatched: { roomId, members in
+                            let vm = RoomViewModel(
+                                deviceId: deviceId,
+                                roomId: roomId,
+                                initialMembers: members,
+                                ws: container.ws
+                            )
+                            router.roomViewModel = vm
+                            router.route = .room(me: me, deviceId: deviceId, roomId: roomId, members: members)
+                        }
+                    )
+                )
                     .navigationTitle("Matching")
 
             case .room:

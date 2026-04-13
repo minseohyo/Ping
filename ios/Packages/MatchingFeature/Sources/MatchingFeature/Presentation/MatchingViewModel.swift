@@ -14,32 +14,54 @@ public final class MatchingViewModel: ObservableObject {
     @Published public private(set) var state: State = .idle
 
     private let deviceId: String
-    private let ws: WebSocketClient
+    private let http: HTTPClient
+    private let onMatched: (String, [Member]) -> Void
 
-    public init(deviceId: String, ws: WebSocketClient) {
+    public init(deviceId: String, http: HTTPClient, onMatched: @escaping (String, [Member]) -> Void) {
         self.deviceId = deviceId
-        self.ws = ws
+        self.http = http
+        self.onMatched = onMatched
     }
 
     public func onAppear() {
-        Task { await ws.connect(); state = .idle }
+        state = .idle
     }
 
     public func ping() {
         Task {
             do {
                 state = .connecting
-                await ws.connect()
-                let payload: JSONValue = .object([
-                    "deviceId": .string(deviceId),
-                    "regionId": .string("default")
-                ])
-                try await ws.send(Envelope(type: "startMatching", payload: payload))
-                state = .queued
+                let result: MatchingStartResponse = try await http.post(
+                    "/matching/start",
+                    body: MatchingStartRequest(deviceId: deviceId, regionId: "default")
+                )
+                switch result.status {
+                case "matched", "already_matched":
+                    guard let roomId = result.roomId else {
+                        state = .error("Matched without roomId")
+                        return
+                    }
+                    onMatched(roomId, result.members ?? [])
+                case "queued":
+                    state = .queued
+                default:
+                    state = .error("Unexpected matching status: \(result.status)")
+                }
             } catch {
-                state = .error("Failed to send startMatching: \(error.localizedDescription)")
+                state = .error("Failed to start matching: \(error.localizedDescription)")
             }
         }
     }
+}
+
+private struct MatchingStartRequest: Encodable {
+    let deviceId: String
+    let regionId: String
+}
+
+private struct MatchingStartResponse: Decodable {
+    let status: String
+    let roomId: String?
+    let members: [Member]?
 }
 
