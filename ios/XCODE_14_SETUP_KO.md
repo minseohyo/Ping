@@ -53,9 +53,41 @@
 - `ProfileFeature` (지금은 비어 있어도 추가해 두면 됨)
 
 7. **TARGETS → 앱 타깃 → General → Frameworks, Libraries, and Embedded Content**  
-   위 패키지들이 **모두 링크**되어 있는지 확인합니다. 없으면 **+** 로 추가합니다.
+   **`+`를 눌러 아래 제품을 앱에 전부 넣습니다.** (하나라도 빠지면 `No such module '…'`가 납니다.)
+
+   - `CoreModels`
+   - `CoreNetworking`
+   - `CorePersistence`
+   - `CoreDI`  ← `PingAppEntry.swift`가 `import CoreDI` 하므로 **필수**
+   - `CoreUI`
+   - `AuthFeature`
+   - `MatchingFeature`
+   - `RoomFeature`
+   - `InteractionFeature`
+   - (선택) `ProfileFeature`
+
+   **Embed**는 모두 **Do Not Embed** 그대로 두면 됩니다.
 
 8. 추가가 끝나면 **Package Dependencies** 탭에 `CoreModels`, `AuthFeature` 같은 이름이 **한 줄씩** 보여야 정상입니다.
+
+---
+
+## 3-보충-B Run 시 **`No such module 'CoreDI'`** 만 날 때
+
+의미: **`CoreDI` 패키지가 SPM에 없거나**, 있어도 **앱 타깃에 `CoreDI` 라이브러리가 링크되지 않음**.
+
+### 확인 순서
+
+1. **프로젝트 → Package Dependencies** 에 **`CoreDI`** 가 보이나요?  
+   - **없으면**: `+` → **Add Local…** → `ios/Packages/CoreDI` 폴더 선택 후 추가.
+
+2. **TARGETS → 앱 → General → Frameworks, Libraries, and Embedded Content**  
+   - 목록에 **`CoreDI`** 가 있는지 확인.  
+   - **없으면 `+`** → 목록에서 **`CoreDI`** 선택 → **Add**.
+
+3. **Product → Clean Build Folder** (⇧⌘K) 후 **Run** (⌘R).
+
+4. 그래도 같으면 **File → Packages → Resolve Package Versions** 한 번 실행.
 
 ---
 
