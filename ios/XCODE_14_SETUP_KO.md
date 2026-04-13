@@ -164,6 +164,42 @@
 
 ---
 
+## 5-보충 실제 아이폰에서 **`Failed to send startMatching`** 일 때
+
+### 1) URL을 맥 주소로 바꾸기
+
+- **`127.0.0.1` / `localhost`는 아이폰에서 맥이 아닙니다.** (폰 자신을 가리킵니다.)
+- 맥 터미널에서 IP 확인: `ipconfig getifaddr en0` (Wi‑Fi가 en0일 때)
+- **Info**의 `API_BASE_URL`, `WS_BASE_URL`을 모두 그 IP로 맞춥니다.  
+  예: `http://192.168.0.12:8000`, `ws://192.168.0.12:8000/ws`
+
+### 2) 맥 방화벽
+
+- 시스템 설정에서 **8000 포트**로 들어오는 연검이 막히지 않았는지 확인합니다.
+
+### 3) 로컬 HTTP / WebSocket — ATS (App Transport Security)
+
+`http://` + 사설 IP(`192.168.x.x`) 조합은 iOS가 막을 수 있습니다. **디버그/MVP용**으로 Info에 아래를 추가합니다.
+
+1. **TARGETS → 앱 → Info → Custom iOS Target Properties** 에서 **+**
+2. Key에 **`App Transport Security Settings`** 선택 (타입 Dictionary)
+3. 방금 만든 항목을 펼치고 **+** 로 하위 항목 추가
+4. Key: **`Allow Local Networking`** (내부 키 `NSAllowsLocalNetworking`) → **YES**
+
+(원시 키로는 `NSAppTransportSecurity` 딕셔너리 안에 `NSAllowsLocalNetworking` = `YES`.)
+
+### 4) “아이폰만 있는데 매칭 2명을 어떻게?”
+
+**아이폰 하나로 ‘시뮬레이터’를 돌리는 건 아닙니다.** 매칭 테스트는 **클라이언트 2개**가 필요합니다.
+
+- **방법 A**: Xcode에서 **시뮬레이터 하나 더 실행** (다른 기종 선택 후 Run) → 시뮬 + 실제 아이폰 둘 다 같은 Wi‑Fi, 둘 다 Info를 **맥 IP**로 설정  
+- **방법 B**: 아이폰 두 대  
+- **방법 C**: 맥 브라우저에서 간단한 WS 테스트 페이지 (별도 도구)
+
+앱 코드는 **전송 직전에 WebSocket `connect()`를 다시 호출**하도록 되어 있어, 연결 전에 Ping을 눌러도 실패하기 어렵게 맞춰 두었습니다.
+
+---
+
 ## 6. 서버 실행 (맥 터미널)
 
 레포의 `server/README.md` 참고. 예:
@@ -206,4 +242,4 @@ python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 - **“No such module AuthFeature” 등**: Package Dependencies에 패키지가 보인 뒤, **General → Frameworks, Libraries** 에서 해당 제품(예: `AuthFeature`) **+** 로 추가
 - **`Multiple commands produce … stringsdata`**: 같은 `.swift`가 두 번 빌드됨 → **Build Phases → Compile Sources** 에서 중복 제거, `PingApp.swift` 두 벌 없애기
 - **`@main` 중복**: `PingAppApp.swift` 삭제 또는 `@main` 제거
-- **WebSocket 연결 실패**: 서버가 `0.0.0.0:8000`으로 떠 있는지, 방화벽, URL이 `ws://` 인지 확인
+- **WebSocket 연결 실패 / `Failed to send startMatching`**: 실기기는 **맥 IP** + **ATS `Allow Local Networking`** → **5-보충** 참고. 서버는 `--host 0.0.0.0` 로 떠 있어야 함.

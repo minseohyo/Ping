@@ -29,6 +29,7 @@ public final class MatchingViewModel: ObservableObject {
         Task {
             do {
                 state = .connecting
+                await ws.connect()
                 let payload: JSONValue = .object([
                     "deviceId": .string(deviceId),
                     "regionId": .string("default")
@@ -36,7 +37,7 @@ public final class MatchingViewModel: ObservableObject {
                 try await ws.send(Envelope(type: "startMatching", payload: payload))
                 state = .queued
             } catch {
-                state = .error("Failed to send startMatching")
+                state = .error("Failed to send startMatching: \(error.localizedDescription)")
             }
         }
     }
